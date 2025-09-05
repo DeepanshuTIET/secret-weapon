@@ -1,0 +1,27 @@
+# Indian Stock Tracker - Required Dependencies
+
+# Core data processing
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Excel file handling
+openpyxl>=3.1.0
+
+# Stock data APIs
+yfinance>=0.2.0
+nsetools>=2.0.0
+
+# Network requests
+requests>=2.31.0
+
+# Timezone handling for Indian markets
+pytz>=2023.3
+
+# GUI enhancements (optional)
+tkinter-tooltip>=2.0.0
+
+# For building executable (development only)
+pyinstaller>=6.0.0
+
+# Additional utilities
+python-dotenv>=1.0.0
