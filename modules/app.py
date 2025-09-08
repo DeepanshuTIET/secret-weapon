@@ -67,7 +67,7 @@ class StockTrackerApp:
             if self.root:
                 messagebox.showerror(title, message)
             else:
-                # Fallback if no GUI is available
+                # Fallback error message 
                 print(f"ERROR - {title}: {message}")
         except:
             print(f"ERROR - {title}: {message}")

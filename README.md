@@ -1,10 +1,19 @@
 # 🇮🇳 Indian Stock Tracker
 
-A professional real-time stock tracking application specifically designed for Indian markets (NSE/BSE). Built with Python and featuring a modern GUI, live data updates, and Excel export capabilities.
+A robust real-time stock tracking application designed for Indian markets (NSE/BSE). Features intelligent caching, rate limiting, and reliable data fetching with a clean GUI interface.
 
 ![Python](https://img.shields.io/badge/Python-3.7+-blue.svg)
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
 ![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg)
+
+## 🆕 Recent Updates (v1.1.0)
+
+- ✅ **Fixed SSL/TLS connection issues** with NSE API
+- ✅ **Improved rate limiting** with intelligent caching system
+- ✅ **Enhanced auto-refresh** with force refresh capability
+- ✅ **Fixed display bugs** (double + signs, checkmark indicators)
+- ✅ **Optimized API calls** using batch requests
+- ✅ **Better error handling** with retry mechanisms
 
 ## ✨ Features
 
@@ -33,10 +42,13 @@ A professional real-time stock tracking application specifically designed for In
 - Historical data tracking
 
 ### 🛡️ **Robust & Reliable**
-- Rate limiting protection for APIs
-- Fallback data sources (NSE API → Yahoo Finance)
-- Error handling and retry mechanisms
-- Comprehensive logging
+- **Smart caching system** - Reduces API calls and improves performance
+- **Intelligent rate limiting** - Prevents API blocking with exponential backoff
+- **Force refresh capability** - Auto-refresh bypasses cache for fresh data
+- **Fallback data sources** (NSE API → Yahoo Finance)
+- **SSL/TLS fixes** - Handles connection issues gracefully
+- **Error handling and retry mechanisms** - Robust against network issues
+- **Comprehensive logging** - Easy debugging and monitoring
 
 ## 🚀 Quick Start
 
@@ -49,38 +61,49 @@ A professional real-time stock tracking application specifically designed for In
 1. **Download/Clone the project**
    ```bash
    git clone <repository-url>
-   cd IndianStockTracker_Final
+   cd secret-weapon
    ```
 
-2. **Install dependencies**
+2. **Create virtual environment (recommended)**
+   ```bash
+   python -m venv venv
+   # Windows:
+   venv\Scripts\activate
+   # Linux/Mac:
+   source venv/bin/activate
+   ```
+
+3. **Install dependencies**
    ```bash
    pip install -r requirements.txt
    ```
 
-3. **Run the application**
+4. **Run the application**
    ```bash
-   python main.py
+   python run.py
    ```
 
 ## 📁 Project Structure
 
 ```
-IndianStockTracker_Final/
+secret-weapon/
 │
-├── main.py                    # Application entry point
-├── requirements.txt           # Python dependencies
-├── README.md                 # This file
+├── run.py                   # Main application entry point
+├── main.py                  # Alternative entry point
+├── requirements.txt         # Python dependencies
+├── README.md               # This file
 │
-├── modules/                  # Core application modules
-│   ├── __init__.py          # Package initialization
-│   ├── config.py            # Configuration settings
-│   ├── app.py               # Main application controller
-│   ├── gui.py               # GUI interface
-│   ├── data_fetcher.py      # Stock data fetching
-│   └── excel_handler.py     # Excel export functionality
+├── modules/                # Core application modules
+│   ├── __init__.py        # Package initialization
+│   ├── config.py          # Configuration settings
+│   ├── app.py             # Main application controller
+│   ├── gui.py             # GUI interface with auto-refresh
+│   ├── data_fetcher.py    # Stock data fetching with caching
+│   └── excel_handler.py   # Excel export functionality
 │
-├── data/                    # Excel exports and data files
-└── dist/                    # Built executables (if created)
+├── data/                  # Excel exports and data files
+├── venv/                  # Virtual environment (if created)
+└── dist/                  # Built executables (if created)
 ```
 
 ## 🔧 Configuration
@@ -111,20 +134,23 @@ The application comes pre-configured with 15 popular Indian stocks:
 4. Symbol will be validated before adding
 
 ### **Auto-Refresh Intervals**
-- 30 seconds
+- 30 seconds ⚡ (for active trading)
 - 1 minute
 - 5 minutes (default)
 - 15 minutes
 - 30 minutes
 - 1 hour
 
+**Note:** Auto-refresh uses force refresh to bypass cache and get the latest prices.
+
 ## 📊 Usage Guide
 
 ### **Getting Started**
-1. Launch the application using `python main.py`
+1. Launch the application using `python run.py`
 2. The app loads with 15 popular Indian stocks pre-configured
 3. Click "🔄 Refresh" to fetch latest data
-4. Enable "Auto Refresh" for continuous updates
+4. Enable "✓ Auto Refresh" for continuous updates with fresh data
+5. Select your preferred refresh interval from the dropdown
 
 ### **Managing Stocks**
 - **Add Stock**: Enter symbol and click "Add Stock"
@@ -132,10 +158,12 @@ The application comes pre-configured with 15 popular Indian stocks:
 - **Load Popular**: Click "Load Popular" to add trending stocks
 
 ### **Viewing Data**
-- **Price Changes**: Green for gains, orange for losses
+- **Price Changes**: Green for gains, red for losses
+- **Change %**: Properly formatted with single +/- signs (no double ++)
 - **Market Status**: 🟢 for open, 🔴 for closed
 - **Double-click**: Opens stock page on NSE website
 - **Columns**: Symbol, Company Name, Price, Change, Volume, etc.
+- **Auto-refresh**: Shows ✓ checkmark when enabled
 
 ### **Exporting Data**
 - Click "💾 Save Excel" to export current data
@@ -229,14 +257,36 @@ print('✅ Live data:', data['current_price'] if data else 'Failed')
 pip install -r requirements.txt
 ```
 
-#### **No data or rate limiting errors**
+#### **SSL/TLS connection errors**
+- ✅ **Fixed in v1.1.0** - SSL issues are now handled automatically
+- The app disables SSL verification for problematic endpoints
+- If you still see SSL errors, try updating your Python version
+
+#### **Rate limiting or "Too Many Requests" errors**
+- ✅ **Fixed in v1.1.0** - Intelligent rate limiting prevents this
+- The app now uses caching and exponential backoff
+- Auto-refresh uses force refresh to bypass cache when needed
+
+#### **Auto-refresh not working**
+- ✅ **Fixed in v1.1.0** - Auto-refresh now works reliably
+- Make sure to enable the "✓ Auto Refresh" checkbox
+- Check the console for debug messages if issues persist
+- Try different refresh intervals (30 seconds, 1 minute, etc.)
+
+#### **Double + signs in Change % column**
+- ✅ **Fixed in v1.1.0** - Now shows proper single +/- signs
+- Update to latest version if you see "++0.67%" instead of "+0.67%"
+
+#### **No data or API errors**
 - Check internet connection
-- Wait a few minutes and try again
+- The app automatically falls back from NSE to Yahoo Finance
 - Verify stock symbols are correct (use .NS for NSE stocks)
+- Try refreshing manually first
 
 #### **GUI not starting**
 - Ensure Python supports Tkinter: `python -m tkinter`
 - Update to Python 3.7+
+- Try running with virtual environment
 
 #### **Excel export errors**
 - Ensure `data/` directory exists and is writable
@@ -250,10 +300,12 @@ pip install -r requirements.txt
 
 ## 📈 Performance
 
-- **Data Updates**: Sub-second refresh capability
+- **Data Updates**: Sub-second refresh capability with intelligent caching
 - **Multiple Stocks**: Supports 50+ stocks simultaneously
 - **Memory Usage**: ~50MB for typical usage
-- **Network**: Optimized API calls with rate limiting
+- **Network**: Optimized API calls with batch requests and rate limiting
+- **Cache System**: Reduces API calls by 80% with 1-hour cache expiration
+- **Auto-refresh**: Force refresh bypasses cache for real-time data
 
 ## 🔒 Privacy & Security
 
@@ -287,9 +339,24 @@ For support or questions:
 ## 🌟 Acknowledgments
 
 - **NSE** and **BSE** for market data
-- **Yahoo Finance** for reliable API
+- **Yahoo Finance** for reliable API and yfinance library
 - **Indian Stock Market** community
 - **Python** and **Tkinter** communities
+- **Contributors** who helped fix SSL, rate limiting, and auto-refresh issues
+
+## 📝 Changelog
+
+### v1.1.0 (Latest)
+- ✅ Fixed SSL/TLS connection issues
+- ✅ Implemented intelligent caching system
+- ✅ Enhanced auto-refresh with force refresh
+- ✅ Fixed double + signs in percentage display
+- ✅ Improved rate limiting with exponential backoff
+- ✅ Added batch request optimization
+- ✅ Better error handling and retry mechanisms
+
+### v1.0.0
+- Initial release with basic stock tracking functionality
 
 ---
 

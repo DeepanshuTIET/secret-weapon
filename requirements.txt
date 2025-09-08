@@ -1,27 +1,32 @@
-# Indian Stock Tracker - Required Dependencies
+# Requirements for Indian Stock Tracker
+# Install with: pip install -r requirements.txt
 
-# Core data processing
-pandas>=2.0.0
-numpy>=1.24.0
+# Main data stuff
+pandas>=2.0.0           # For data manipulation
+numpy>=1.24.0           # Pandas dependency
 
-# Excel file handling
-openpyxl>=3.1.0
+# Excel export
+openpyxl>=3.1.0         # Excel file handling
 
-# Stock data APIs
-yfinance>=0.2.0
-nsetools>=2.0.0
+# Stock APIs
+yfinance>=0.2.0         # Yahoo Finance API - main data source
+nsetools>=2.0.0         # NSE India API (backup)
 
-# Network requests
-requests>=2.31.0
+# HTTP stuff
+requests>=2.31.0        # HTTP requests
 
-# Timezone handling for Indian markets
-pytz>=2023.3
+# Time zones
+pytz>=2023.3            # For Indian market hours
 
-# GUI enhancements (optional)
-tkinter-tooltip>=2.0.0
+# GUI
+tkinter-tooltip>=2.0.0  # Better tooltips
 
-# For building executable (development only)
-pyinstaller>=6.0.0
+# Build executable
+pyinstaller>=6.0.0      # For .exe builds
 
-# Additional utilities
-python-dotenv>=1.0.0
+# Utils
+python-dotenv>=1.0.0    # Environment variables
+
+# Caching and rate limiting
+requests-cache>=1.0.0   # Cache API responses
+fake-useragent>=1.4.0   # Rotate user agents

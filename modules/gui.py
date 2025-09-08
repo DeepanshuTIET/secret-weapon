@@ -1,6 +1,6 @@
 """
-Modern GUI module for Indian Stock Tracker
-Professional interface optimized for Indian stock market data
+GUI for the stock tracker app
+Built with Tkinter - not the prettiest but it works!
 """
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
@@ -26,8 +26,7 @@ class IndianStockTrackerGUI:
     def __init__(self, root: tk.Tk):
         """
         Initialize the GUI
-        
-        Args:
+        Arguments:
             root: Tkinter root window
         """
         self.root = root
@@ -139,7 +138,7 @@ class IndianStockTrackerGUI:
         auto_frame = ttk.Frame(action_frame)
         auto_frame.pack(side="right")
         
-        ttk.Checkbutton(auto_frame, text="Auto Refresh", variable=self.is_auto_refresh,
+        ttk.Checkbutton(auto_frame, text="✓ Auto Refresh", variable=self.is_auto_refresh,
                        command=self._toggle_auto_refresh).pack(side="left", padx=(0, 5))
         
         refresh_combo = ttk.Combobox(auto_frame, textvariable=self.refresh_interval, 
@@ -270,7 +269,7 @@ class IndianStockTrackerGUI:
         def fetch_data():
             try:
                 self._update_status("Fetching Indian stock data...")
-                self.current_data = self.data_fetcher.get_multiple_stocks(self.selected_stocks)
+                self.current_data = self.data_fetcher.get_multiple_stocks_batch(self.selected_stocks)
                 
                 # Update GUI in main thread
                 self.root.after(0, self._update_display)
@@ -281,6 +280,27 @@ class IndianStockTrackerGUI:
         
         # Run in separate thread
         threading.Thread(target=fetch_data, daemon=True).start()
+    
+    def _auto_refresh_data(self):
+        """Refresh stock data for auto-refresh (forces fresh data)"""
+        if not self.selected_stocks:
+            return
+        
+        def fetch_fresh_data():
+            try:
+                self._update_status("Auto-refreshing stock data...")
+                # Force refresh to bypass cache and get fresh data
+                self.current_data = self.data_fetcher.get_multiple_stocks_batch(self.selected_stocks, force_refresh=True)
+                
+                # Update GUI in main thread
+                self.root.after(0, self._update_display)
+                
+            except Exception as e:
+                logger.error(f"Error in auto refresh: {str(e)}")
+                self.root.after(0, lambda: self._update_status("Auto-refresh failed"))
+        
+        # Run in background thread
+        threading.Thread(target=fetch_fresh_data, daemon=True).start()
     
     def _update_display(self):
         """Update the stock display with current data"""
@@ -315,7 +335,7 @@ class IndianStockTrackerGUI:
             # Color code based on change
             if row.get('change', 0) > 0:
                 self.tree.set(item_id, "Change (₹)", f"+{format_currency(row.get('change'), 'INR')}")
-                self.tree.set(item_id, "Change %", f"+{format_percentage(row.get('change_percent'))}")
+                self.tree.set(item_id, "Change %", format_percentage(row.get('change_percent')))
         
         self._update_status(f"Updated {len(self.current_data)} Indian stocks at {datetime.now().strftime('%H:%M:%S')}")
     
@@ -361,29 +381,49 @@ class IndianStockTrackerGUI:
     
     def _start_auto_refresh(self):
         """Start auto-refresh in background thread"""
+        # Stop any existing refresh first
+        if hasattr(self, 'refresh_thread') and self.refresh_thread and self.refresh_thread.is_alive():
+            self.stop_refresh.set()
+            self.refresh_thread.join(timeout=1)
+        
+        # Clear the stop event and start fresh
         self.stop_refresh.clear()
         
         def auto_refresh_loop():
+            print(f"Auto refresh started with interval: {self.refresh_interval.get()}")
+            
             while not self.stop_refresh.is_set():
                 interval_name = self.refresh_interval.get()
                 interval_seconds = REFRESH_INTERVALS.get(interval_name, 300)
+                print(f"Waiting {interval_seconds} seconds for next refresh...")
                 
                 # Wait for the interval or until stop is signaled
                 if self.stop_refresh.wait(interval_seconds):
+                    print("Auto refresh stopped")
                     break
                 
-                # Refresh data if still enabled
-                if self.is_auto_refresh.get():
-                    self.root.after(0, self._refresh_data)
+                # Refresh data if still enabled and not stopped
+                if self.is_auto_refresh.get() and not self.stop_refresh.is_set():
+                    try:
+                        print("Triggering auto refresh...")
+                        self.root.after(0, self._auto_refresh_data)
+                    except Exception as e:
+                        print(f"Auto refresh error: {e}")
+                else:
+                    print("Auto refresh disabled or stopped")
+                    break
         
         self.refresh_thread = threading.Thread(target=auto_refresh_loop, daemon=True)
         self.refresh_thread.start()
-        self._update_status("Auto-refresh enabled for Indian stocks")
+        
+        # Do an immediate refresh when auto-refresh is enabled
+        self._refresh_data()
+        self._update_status("Auto-refresh enabled ✓")
     
     def _stop_auto_refresh(self):
         """Stop auto-refresh"""
         self.stop_refresh.set()
-        if self.refresh_thread:
+        if self.refresh_thread and self.refresh_thread.is_alive():
             self.refresh_thread.join(timeout=1)
         self._update_status("Auto-refresh disabled")
     

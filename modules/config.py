@@ -1,14 +1,15 @@
 """
-Configuration settings for Indian Stock Tracker
+App config file
+It has all the constants here so we don't have magic numbers everywhere
 """
 from pathlib import Path
 
-# Application settings
+# Application settings (to be shifted to config.json)
 APP_NAME = "Indian Stock Tracker"
 APP_VERSION = "1.0.0"
 APP_DESCRIPTION = "Real-time stock tracking application for Indian markets (NSE/BSE)"
 
-# Paths
+# Paths (to be shifted to config.json)
 BASE_DIR = Path(__file__).parent.parent
 DATA_DIR = BASE_DIR / "data"
 DIST_DIR = BASE_DIR / "dist"
@@ -17,30 +18,30 @@ DIST_DIR = BASE_DIR / "dist"
 DATA_DIR.mkdir(exist_ok=True)
 DIST_DIR.mkdir(exist_ok=True)
 
-# Popular Indian stock symbols (NSE)
+# Default Indian stocks - picked the big ones 
 DEFAULT_STOCKS = [
-    "RELIANCE.NS",     # Reliance Industries Ltd
-    "TCS.NS",          # Tata Consultancy Services
-    "INFY.NS",         # Infosys Ltd
-    "HDFCBANK.NS",     # HDFC Bank Ltd
-    "ICICIBANK.NS",    # ICICI Bank Ltd
-    "HINDUNILVR.NS",   # Hindustan Unilever Ltd
-    "BHARTIARTL.NS",   # Bharti Airtel Ltd
-    "ITC.NS",          # ITC Ltd
-    "SBIN.NS",         # State Bank of India
-    "KOTAKBANK.NS",    # Kotak Mahindra Bank
-    "LT.NS",           # Larsen & Toubro Ltd
-    "HCLTECH.NS",      # HCL Technologies Ltd
-    "ASIANPAINT.NS",   # Asian Paints Ltd
-    "MARUTI.NS",       # Maruti Suzuki India Ltd
-    "TITAN.NS"         # Titan Company Ltd
+    "RELIANCE.NS",     # Reliance - always reliable
+    "TCS.NS",          # TCS
+    "INFY.NS",         # Infosys 
+    "HDFCBANK.NS",     # HDFC Bank
+    "ICICIBANK.NS",    # ICICI Bank
+    "HINDUNILVR.NS",   # HUL
+    "BHARTIARTL.NS",   # Airtel
+    "ITC.NS",          # ITC
+    "SBIN.NS",         # SBI
+    "KOTAKBANK.NS",    # Kotak
+    "LT.NS",           # L&T
+    "HCLTECH.NS",      # HCL
+    "ASIANPAINT.NS",   # Asian Paints
+    "MARUTI.NS",       # Maruti
+    "TITAN.NS"         # Titan
 ]
 
-# Data refresh intervals (in seconds)
+# Refresh intervals - in seconds
 REFRESH_INTERVALS = {
     "30 seconds": 30,
     "1 minute": 60,
-    "5 minutes": 300,
+    "5 minutes": 300,        # Default
     "15 minutes": 900,
     "30 minutes": 1800,
     "1 hour": 3600
@@ -69,12 +70,12 @@ GUI_CONFIG = {
     }
 }
 
-# API settings
+# API settings - tweaked these to avoid getting rate limited
 API_CONFIG = {
-    "timeout": 10,
-    "retry_attempts": 3,
-    "retry_delay": 1,
-    "rate_limit_delay": 0.5  # 500ms between requests
+    "timeout": 10,       # Sometimes Yahoo is slow
+    "retry_attempts": 3, # Retry a few times
+    "retry_delay": 1,    # Wait between retries
+    "rate_limit_delay": 0.5  # Be nice to APIs
 }
 
 # Indian market settings

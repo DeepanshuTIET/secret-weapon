@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-Quick runner script for Indian Stock Tracker
-Alternative entry point that performs dependency checks
+Main runner for the stock tracker
+Just runs the app with some basic error checking
 """
 import sys
 from pathlib import Path
 
 def main():
-    """Run the Indian Stock Tracker with dependency checks"""
+    """Start the app"""
     print("🇮🇳 Indian Stock Tracker")
     print("=" * 30)
     
@@ -19,7 +19,7 @@ def main():
         from modules.app import check_dependencies, StockTrackerApp
         
         if not check_dependencies():
-            print("❌ Missing dependencies. Please run: pip install -r requirements.txt")
+            print("❌ Missing deps. Run: pip install -r requirements.txt")
             return 1
         
         # Run the application

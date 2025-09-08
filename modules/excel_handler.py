@@ -22,8 +22,7 @@ class IndianStockExcelHandler:
     def __init__(self, data_dir: Path):
         """
         Initialize Excel handler
-        
-        Args:
+        Arguments:
             data_dir: Directory to save Excel files
         """
         self.data_dir = Path(data_dir)
@@ -32,8 +31,7 @@ class IndianStockExcelHandler:
     def save_stock_data(self, df: pd.DataFrame, filename: Optional[str] = None) -> str:
         """
         Save Indian stock data to Excel file with professional formatting
-        
-        Args:
+        Arguments:
             df: DataFrame containing Indian stock data
             filename: Optional custom filename
             
@@ -199,10 +197,8 @@ class IndianStockExcelHandler:
     def load_stock_data(self, filepath: str) -> pd.DataFrame:
         """
         Load Indian stock data from Excel file
-        
-        Args:
+        Arguments:
             filepath: Path to Excel file
-            
         Returns:
             DataFrame containing the loaded data
         """
@@ -222,7 +218,6 @@ class IndianStockExcelHandler:
     def get_saved_files(self) -> List[Dict]:
         """
         Get list of saved Excel files with metadata
-        
         Returns:
             List of dictionaries containing file information
         """
@@ -248,10 +243,8 @@ class IndianStockExcelHandler:
     def delete_file(self, filepath: str) -> bool:
         """
         Delete an Excel file
-        
-        Args:
+        Arguments:
             filepath: Path to file to delete
-            
         Returns:
             True if successful, False otherwise
         """
@@ -270,8 +263,7 @@ class IndianStockExcelHandler:
     def cleanup_old_files(self, keep_count: int = 10):
         """
         Clean up old Excel files, keeping only the most recent ones
-        
-        Args:
+        Arguments:
             keep_count: Number of recent files to keep
         """
         try:
