@@ -2,6 +2,8 @@
 
 A robust real-time stock tracking application designed for Indian markets (NSE/BSE). Features intelligent caching, rate limiting, and reliable data fetching with a clean GUI interface.
 
+**🔗 GitHub Repository:** [https://github.com/DeepanshuTIET/secret-weapon](https://github.com/DeepanshuTIET/secret-weapon)
+
 ![Python](https://img.shields.io/badge/Python-3.7+-blue.svg)
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
 ![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg)
@@ -60,7 +62,7 @@ A robust real-time stock tracking application designed for Indian markets (NSE/B
 
 1. **Download/Clone the project**
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/DeepanshuTIET/secret-weapon
    cd secret-weapon
    ```
 
