@@ -8,14 +8,21 @@ A robust real-time stock tracking application designed for Indian markets (NSE/B
 ![License](https://img.shields.io/badge/License-MIT-green.svg)
 ![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg)
 
-## 🆕 Recent Updates (v1.1.0)
+## 🆕 Recent Updates (v1.2.0) - Excel Live Updates Release
 
+### 🚀 Major New Features
+- 🆕 **Excel Live Updates** - Real-time stock price updates directly in Excel files
+- 🆕 **Command-line Excel updater** - Run live updates without GUI (`excel_live_runner.py`)
+- 🆕 **Background Excel service** - Continuous Excel updates with customizable intervals
+- 🆕 **Professional Excel formatting** - Indian currency (₹), color-coded gains/losses
+- 🆕 **Excel stock management** - Add/remove stocks directly from Excel tracking
+
+### 🔧 Improvements & Fixes
 - ✅ **Fixed SSL/TLS connection issues** with NSE API
 - ✅ **Improved rate limiting** with intelligent caching system
 - ✅ **Enhanced auto-refresh** with force refresh capability
-- ✅ **Fixed display bugs** (double + signs, checkmark indicators)
-- ✅ **Optimized API calls** using batch requests
 - ✅ **Better error handling** with retry mechanisms
+- ✅ **Optimized API calls** using batch requests
 
 ## ✨ Features
 
@@ -39,6 +46,7 @@ A robust real-time stock tracking application designed for Indian markets (NSE/B
 
 ### 💾 **Excel Export & Data Management**
 - Professional Excel reports with Indian currency formatting
+- **🆕 Live Excel Updates** - Real-time price updates directly in Excel files
 - Summary sheets with market statistics
 - Automatic file management and cleanup
 - Historical data tracking
@@ -57,6 +65,88 @@ A robust real-time stock tracking application designed for Indian markets (NSE/B
 ### Prerequisites
 - Python 3.7 or higher
 - Internet connection for live data
+
+### 🎯 Quick Start - Excel Live Updates (NEW in v1.2.0)
+
+**Want to see live stock prices in Excel? Try this:**
+
+```bash
+# 1. Test the feature first
+python test_excel_live.py
+
+# 2. Start Excel live updates with popular stocks
+python excel_live_runner.py my_live_stocks.xlsx --popular
+
+# 3. Or use the GUI for more control
+python run.py
+```
+
+**That's it!** Your Excel file will now update with live stock prices every 30 seconds.
+
+## 🆕 Excel Live Updates Feature
+
+**Real-time stock price updates directly in Excel files!** Now you can watch stock prices change live in Excel spreadsheets without needing the GUI interface.
+
+### 📊 How it Works
+- Updates stock prices directly in Excel cells in real-time
+- Customizable update intervals (10 seconds to 5 minutes)
+- Professional formatting with Indian currency (₹) and color-coded gains/losses
+- Runs in background - Excel file stays updated even when closed and reopened
+
+### 🎯 Usage Options
+
+#### 1. GUI Interface
+1. Launch the application: `python run.py`
+2. In the "Live Excel Updates" section:
+   - Browse for an existing Excel file or create a new one
+   - Set your preferred update interval
+   - Check "Live Excel Updates" to start
+   - Use "Manage Stocks" to add/remove stocks from Excel tracking
+
+#### 2. Command Line (No GUI Required)
+```bash
+# Update popular Indian stocks every 30 seconds
+python excel_live_runner.py my_live_stocks.xlsx --popular
+
+# Update specific stocks every 60 seconds
+python excel_live_runner.py custom_stocks.xlsx --stocks RELIANCE.NS TCS.NS INFY.NS --interval 60
+
+# Quick start with default settings
+python excel_live_runner.py live_data.xlsx
+```
+
+#### 3. Test the Feature
+```bash
+# Run the test script to verify functionality
+python test_excel_live.py
+```
+
+### 📋 Excel Live Updates Benefits
+- **No GUI Required** - Run in background with command-line tool
+- **Real Excel Integration** - Updates actual Excel cells, not just exports
+- **Persistent Data** - Excel file retains data even when application stops
+- **Professional Formatting** - Indian currency, color coding, proper alignment
+- **Flexible Intervals** - Choose update frequency based on your needs
+
+## 📋 Changelog
+
+### v1.2.0 (2025-01-08) - Excel Live Updates Release
+- 🆕 **Excel Live Updates**: Real-time stock price updates directly in Excel files
+- 🆕 **Command-line Excel updater**: `excel_live_runner.py` for background operation
+- 🆕 **Excel stock management**: Add/remove stocks from Excel tracking via GUI
+- 🆕 **Professional Excel formatting**: Indian currency (₹), color-coded gains/losses
+- 🆕 **Background Excel service**: Continuous updates with customizable intervals
+- 🔧 **Enhanced GUI**: New "Live Excel Updates" section with file management
+- 🔧 **Improved error handling**: Better SSL/TLS connection handling
+- 🔧 **Optimized performance**: Batch API requests and intelligent caching
+
+### v1.1.0 (Previous Release)
+- ✅ Fixed SSL/TLS connection issues with NSE API
+- ✅ Improved rate limiting with intelligent caching system
+- ✅ Enhanced auto-refresh with force refresh capability
+- ✅ Fixed display bugs (double + signs, checkmark indicators)
+- ✅ Optimized API calls using batch requests
+- ✅ Better error handling with retry mechanisms
 
 ### Installation
 
@@ -99,9 +189,13 @@ secret-weapon/
 │   ├── __init__.py        # Package initialization
 │   ├── config.py          # Configuration settings
 │   ├── app.py             # Main application controller
-│   ├── gui.py             # GUI interface with auto-refresh
+│   ├── gui.py             # GUI interface with auto-refresh & Excel live updates
 │   ├── data_fetcher.py    # Stock data fetching with caching
-│   └── excel_handler.py   # Excel export functionality
+│   ├── excel_handler.py   # Excel export functionality
+│   └── excel_live_updater.py # Excel live updates module (NEW in v1.2.0)
+│
+├── excel_live_runner.py   # Command-line Excel live updater (NEW in v1.2.0)
+├── test_excel_live.py     # Test suite for Excel live updates (NEW in v1.2.0)
 │
 ├── data/                  # Excel exports and data files
 ├── venv/                  # Virtual environment (if created)

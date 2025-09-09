@@ -6,7 +6,7 @@ from pathlib import Path
 
 # Application settings (to be shifted to config.json)
 APP_NAME = "Indian Stock Tracker"
-APP_VERSION = "1.0.0"
+APP_VERSION = "1.2.0"
 APP_DESCRIPTION = "Real-time stock tracking application for Indian markets (NSE/BSE)"
 
 # Paths (to be shifted to config.json)

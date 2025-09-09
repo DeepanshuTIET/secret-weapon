@@ -14,6 +14,7 @@ import webbrowser
 
 from .data_fetcher import IndianStockDataFetcher, format_currency, format_percentage, format_large_number
 from .excel_handler import IndianStockExcelHandler
+from .excel_live_updater import ExcelLiveUpdater
 from .config import GUI_CONFIG, REFRESH_INTERVALS, DEFAULT_STOCKS
 
 logger = logging.getLogger(__name__)
@@ -40,6 +41,12 @@ class IndianStockTrackerGUI:
         self.current_data = None
         self.refresh_thread = None
         self.stop_refresh = threading.Event()
+        
+        # Excel live update variables
+        self.is_excel_live_update = tk.BooleanVar()
+        self.excel_live_updater = None
+        self.excel_file_path = tk.StringVar()
+        self.excel_update_interval = tk.StringVar(value="30 seconds")
         
         # Initialize GUI
         self._setup_window()
@@ -145,6 +152,40 @@ class IndianStockTrackerGUI:
                                    values=list(REFRESH_INTERVALS.keys()),
                                    width=12, state="readonly")
         refresh_combo.pack(side="left")
+        
+        # Excel Live Update Section
+        excel_frame = ttk.LabelFrame(control_frame, text="📊 Live Excel Updates", padding="10")
+        excel_frame.grid(row=2, column=0, columnspan=2, sticky="ew", pady=(10, 0))
+        excel_frame.columnconfigure(1, weight=1)
+        
+        # Excel file selection
+        file_frame = ttk.Frame(excel_frame)
+        file_frame.grid(row=0, column=0, columnspan=2, sticky="ew", pady=(0, 10))
+        file_frame.columnconfigure(1, weight=1)
+        
+        ttk.Label(file_frame, text="Excel File:").grid(row=0, column=0, sticky="w", padx=(0, 10))
+        self.excel_file_entry = ttk.Entry(file_frame, textvariable=self.excel_file_path, font=("Arial", 9))
+        self.excel_file_entry.grid(row=0, column=1, sticky="ew", padx=(0, 10))
+        
+        ttk.Button(file_frame, text="Browse", command=self._browse_excel_file).grid(row=0, column=2, padx=(0, 5))
+        ttk.Button(file_frame, text="New", command=self._create_new_excel_file).grid(row=0, column=3)
+        
+        # Excel live update controls
+        excel_controls_frame = ttk.Frame(excel_frame)
+        excel_controls_frame.grid(row=1, column=0, columnspan=2, sticky="ew")
+        
+        ttk.Checkbutton(excel_controls_frame, text="🔄 Live Excel Updates", 
+                       variable=self.is_excel_live_update,
+                       command=self._toggle_excel_live_updates).pack(side="left", padx=(0, 10))
+        
+        ttk.Label(excel_controls_frame, text="Update Every:").pack(side="left", padx=(0, 5))
+        excel_interval_combo = ttk.Combobox(excel_controls_frame, textvariable=self.excel_update_interval,
+                                          values=["10 seconds", "30 seconds", "1 minute", "2 minutes", "5 minutes"],
+                                          width=12, state="readonly")
+        excel_interval_combo.pack(side="left", padx=(0, 10))
+        
+        ttk.Button(excel_controls_frame, text="📋 Manage Stocks", command=self._manage_excel_stocks).pack(side="left", padx=(0, 5))
+        ttk.Button(excel_controls_frame, text="🔄 Update Now", command=self._manual_excel_update).pack(side="left")
         
     def _create_stock_display(self, parent):
         """Create the main stock data display"""
@@ -463,9 +504,188 @@ class IndianStockTrackerGUI:
         except Exception as e:
             messagebox.showerror("Error", f"Could not open folder: {str(e)}")
     
+    def _browse_excel_file(self):
+        """Browse for an Excel file to use for live updates"""
+        filename = filedialog.askopenfilename(
+            title="Select Excel File for Live Updates",
+            filetypes=[("Excel files", "*.xlsx *.xls"), ("All files", "*.*")],
+            defaultextension=".xlsx"
+        )
+        if filename:
+            self.excel_file_path.set(filename)
+            self._update_status(f"Selected Excel file: {Path(filename).name}")
+    
+    def _create_new_excel_file(self):
+        """Create a new Excel file for live updates"""
+        filename = filedialog.asksaveasfilename(
+            title="Create New Excel File for Live Updates",
+            filetypes=[("Excel files", "*.xlsx"), ("All files", "*.*")],
+            defaultextension=".xlsx",
+            initialname=f"live_stock_data_{datetime.now().strftime('%Y%m%d_%H%M%S')}.xlsx"
+        )
+        if filename:
+            self.excel_file_path.set(filename)
+            self._update_status(f"Will create Excel file: {Path(filename).name}")
+    
+    def _toggle_excel_live_updates(self):
+        """Toggle Excel live updates on/off"""
+        if self.is_excel_live_update.get():
+            self._start_excel_live_updates()
+        else:
+            self._stop_excel_live_updates()
+    
+    def _start_excel_live_updates(self):
+        """Start Excel live updates"""
+        try:
+            excel_file = self.excel_file_path.get().strip()
+            if not excel_file:
+                messagebox.showwarning("No Excel File", 
+                                     "Please select or create an Excel file first.")
+                self.is_excel_live_update.set(False)
+                return
+            
+            # Parse update interval
+            interval_text = self.excel_update_interval.get()
+            if "second" in interval_text:
+                interval_seconds = int(interval_text.split()[0])
+            elif "minute" in interval_text:
+                interval_seconds = int(interval_text.split()[0]) * 60
+            else:
+                interval_seconds = 30  # Default
+            
+            # Create and configure live updater
+            self.excel_live_updater = ExcelLiveUpdater(excel_file, interval_seconds)
+            self.excel_live_updater.set_status_callback(self._update_status)
+            
+            # Add current stocks to the Excel file
+            if self.selected_stocks:
+                for stock in self.selected_stocks:
+                    self.excel_live_updater.add_stock(stock)
+            
+            # Start live updates
+            self.excel_live_updater.start_live_updates()
+            self._update_status("🔄 Excel live updates started!")
+            
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to start Excel live updates: {str(e)}")
+            self.is_excel_live_update.set(False)
+            self._update_status("Failed to start Excel live updates")
+    
+    def _stop_excel_live_updates(self):
+        """Stop Excel live updates"""
+        if self.excel_live_updater:
+            self.excel_live_updater.stop_live_updates()
+            self.excel_live_updater.cleanup()
+            self.excel_live_updater = None
+        self._update_status("Excel live updates stopped")
+    
+    def _manage_excel_stocks(self):
+        """Open a dialog to manage stocks in Excel live updates"""
+        if not self.excel_live_updater:
+            messagebox.showwarning("Not Running", 
+                                 "Excel live updates must be started first.")
+            return
+        
+        # Create a simple dialog to show current stocks and allow adding/removing
+        dialog = tk.Toplevel(self.root)
+        dialog.title("Manage Excel Live Update Stocks")
+        dialog.geometry("500x400")
+        dialog.transient(self.root)
+        dialog.grab_set()
+        
+        # Center the dialog
+        dialog.geometry("+%d+%d" % (self.root.winfo_rootx() + 50, self.root.winfo_rooty() + 50))
+        
+        # Current stocks list
+        ttk.Label(dialog, text="Stocks in Excel Live Updates:", font=("Arial", 12, "bold")).pack(pady=10)
+        
+        # Listbox with scrollbar
+        list_frame = ttk.Frame(dialog)
+        list_frame.pack(fill="both", expand=True, padx=20, pady=10)
+        
+        listbox = tk.Listbox(list_frame, height=15)
+        scrollbar = ttk.Scrollbar(list_frame, orient="vertical", command=listbox.yview)
+        listbox.configure(yscrollcommand=scrollbar.set)
+        
+        listbox.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+        
+        # Populate listbox
+        def refresh_list():
+            listbox.delete(0, tk.END)
+            if self.excel_live_updater:
+                for stock in self.excel_live_updater.tracked_stocks:
+                    listbox.insert(tk.END, stock)
+        
+        refresh_list()
+        
+        # Add/Remove controls
+        controls_frame = ttk.Frame(dialog)
+        controls_frame.pack(fill="x", padx=20, pady=10)
+        
+        # Add stock
+        add_frame = ttk.Frame(controls_frame)
+        add_frame.pack(fill="x", pady=(0, 10))
+        
+        ttk.Label(add_frame, text="Add Stock:").pack(side="left", padx=(0, 10))
+        stock_entry = ttk.Entry(add_frame)
+        stock_entry.pack(side="left", fill="x", expand=True, padx=(0, 10))
+        
+        def add_stock():
+            symbol = stock_entry.get().strip().upper()
+            if symbol and self.excel_live_updater:
+                if self.excel_live_updater.add_stock(symbol):
+                    stock_entry.delete(0, tk.END)
+                    refresh_list()
+        
+        def remove_stock():
+            selection = listbox.curselection()
+            if selection and self.excel_live_updater:
+                symbol = listbox.get(selection[0])
+                if self.excel_live_updater.remove_stock(symbol):
+                    refresh_list()
+        
+        ttk.Button(add_frame, text="Add", command=add_stock).pack(side="left")
+        stock_entry.bind('<Return>', lambda e: add_stock())
+        
+        # Remove stock
+        button_frame = ttk.Frame(controls_frame)
+        button_frame.pack(fill="x")
+        
+        ttk.Button(button_frame, text="Remove Selected", command=remove_stock).pack(side="left", padx=(0, 10))
+        ttk.Button(button_frame, text="Close", command=dialog.destroy).pack(side="right")
+    
+    def _manual_excel_update(self):
+        """Trigger a manual Excel update"""
+        if not self.excel_live_updater:
+            if not self.excel_file_path.get().strip():
+                messagebox.showwarning("No Excel File", 
+                                     "Please select or create an Excel file first.")
+                return
+            
+            # Create a temporary updater for manual update
+            try:
+                temp_updater = ExcelLiveUpdater(self.excel_file_path.get(), 30)
+                temp_updater.set_status_callback(self._update_status)
+                
+                # Add current stocks
+                if self.selected_stocks:
+                    for stock in self.selected_stocks:
+                        temp_updater.add_stock(stock)
+                
+                # Perform manual update
+                temp_updater.manual_update()
+                temp_updater.cleanup()
+                
+            except Exception as e:
+                messagebox.showerror("Error", f"Manual update failed: {str(e)}")
+        else:
+            self.excel_live_updater.manual_update()
+    
     def _on_closing(self):
         """Handle application closing"""
         self._stop_auto_refresh()
+        self._stop_excel_live_updates()
         self.root.destroy()
 
 def create_modern_style():
