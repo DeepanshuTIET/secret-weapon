@@ -17,6 +17,14 @@ from .excel_handler import IndianStockExcelHandler
 from .excel_live_updater import ExcelLiveUpdater
 from .config import GUI_CONFIG, REFRESH_INTERVALS, DEFAULT_STOCKS
 
+# Try to import xlwings updater
+try:
+    from .excel_xlwings_updater import ExcelXlwingsUpdater
+    XLWINGS_AVAILABLE = True
+except ImportError:
+    XLWINGS_AVAILABLE = False
+    ExcelXlwingsUpdater = None
+
 logger = logging.getLogger(__name__)
 
 class IndianStockTrackerGUI:
@@ -47,6 +55,11 @@ class IndianStockTrackerGUI:
         self.excel_live_updater = None
         self.excel_file_path = tk.StringVar()
         self.excel_update_interval = tk.StringVar(value="30 seconds")
+        
+        # XLWings specific variables
+        self.use_xlwings = tk.BooleanVar(value=False)
+        self.xlwings_visible = tk.BooleanVar(value=False)
+        self.excel_xlwings_updater = None
         
         # Initialize GUI
         self._setup_window()
@@ -180,12 +193,42 @@ class IndianStockTrackerGUI:
         
         ttk.Label(excel_controls_frame, text="Update Every:").pack(side="left", padx=(0, 5))
         excel_interval_combo = ttk.Combobox(excel_controls_frame, textvariable=self.excel_update_interval,
-                                          values=["10 seconds", "30 seconds", "1 minute", "2 minutes", "5 minutes"],
+                                          values=["5 seconds", "10 seconds", "30 seconds", "1 minute", "2 minutes", "5 minutes"],
                                           width=12, state="readonly")
         excel_interval_combo.pack(side="left", padx=(0, 10))
         
         ttk.Button(excel_controls_frame, text="📋 Manage Stocks", command=self._manage_excel_stocks).pack(side="left", padx=(0, 5))
         ttk.Button(excel_controls_frame, text="🔄 Update Now", command=self._manual_excel_update).pack(side="left")
+        
+        # XLWings options frame
+        xlwings_frame = ttk.Frame(excel_frame)
+        xlwings_frame.grid(row=2, column=0, columnspan=2, sticky="ew", pady=(10, 0))
+        
+        # XLWings option
+        xlwings_enabled = XLWINGS_AVAILABLE
+        xlwings_checkbutton = ttk.Checkbutton(xlwings_frame, 
+                                            text=f"⚡ Use XLWings (Ultra-Smooth)" + ("" if xlwings_enabled else " - Not Available"),
+                                            variable=self.use_xlwings,
+                                            command=self._on_xlwings_toggle,
+                                            state="normal" if xlwings_enabled else "disabled")
+        xlwings_checkbutton.pack(side="left", padx=(0, 15))
+        
+        # XLWings visibility option
+        self.xlwings_visible_checkbutton = ttk.Checkbutton(xlwings_frame, 
+                                                         text="👀 Show Excel",
+                                                         variable=self.xlwings_visible,
+                                                         state="disabled" if not xlwings_enabled else "normal")
+        self.xlwings_visible_checkbutton.pack(side="left", padx=(0, 10))
+        
+        # Info label for XLWings
+        if xlwings_enabled:
+            info_text = "💡 XLWings provides ultra-smooth real-time Excel updates"
+        else:
+            info_text = "💡 Install xlwings for ultra-smooth Excel updates: pip install xlwings"
+        
+        self.xlwings_info_label = ttk.Label(xlwings_frame, text=info_text, 
+                                          font=("Arial", 8), foreground="gray")
+        self.xlwings_info_label.pack(side="left")
         
     def _create_stock_display(self, parent):
         """Create the main stock data display"""
@@ -534,8 +577,24 @@ class IndianStockTrackerGUI:
         else:
             self._stop_excel_live_updates()
     
+    def _on_xlwings_toggle(self):
+        """Handle xlwings option toggle"""
+        if not XLWINGS_AVAILABLE:
+            self.use_xlwings.set(False)
+            messagebox.showinfo("XLWings Not Available", 
+                              "XLWings is not installed. Install it with:\npip install xlwings")
+            return
+        
+        # Update info text based on selection
+        if self.use_xlwings.get():
+            self.xlwings_info_label.config(text="💡 XLWings will provide ultra-smooth Excel updates", 
+                                         foreground="green")
+        else:
+            self.xlwings_info_label.config(text="💡 XLWings provides ultra-smooth real-time Excel updates", 
+                                         foreground="gray")
+    
     def _start_excel_live_updates(self):
-        """Start Excel live updates"""
+        """Start Excel live updates (openpyxl or xlwings)"""
         try:
             excel_file = self.excel_file_path.get().strip()
             if not excel_file:
@@ -553,18 +612,39 @@ class IndianStockTrackerGUI:
             else:
                 interval_seconds = 30  # Default
             
-            # Create and configure live updater
-            self.excel_live_updater = ExcelLiveUpdater(excel_file, interval_seconds)
-            self.excel_live_updater.set_status_callback(self._update_status)
-            
-            # Add current stocks to the Excel file
-            if self.selected_stocks:
-                for stock in self.selected_stocks:
-                    self.excel_live_updater.add_stock(stock)
-            
-            # Start live updates
-            self.excel_live_updater.start_live_updates()
-            self._update_status("🔄 Excel live updates started!")
+            # Choose updater based on xlwings selection
+            if self.use_xlwings.get() and XLWINGS_AVAILABLE:
+                # Use xlwings for ultra-smooth updates
+                visible = self.xlwings_visible.get()
+                self.excel_xlwings_updater = ExcelXlwingsUpdater(
+                    excel_file, 
+                    interval_seconds, 
+                    visible=visible
+                )
+                self.excel_xlwings_updater.set_status_callback(self._update_status)
+                
+                # Add current stocks to the Excel file
+                if self.selected_stocks:
+                    for stock in self.selected_stocks:
+                        self.excel_xlwings_updater.add_stock(stock)
+                
+                # Start live updates
+                self.excel_xlwings_updater.start_live_updates()
+                self._update_status("⚡ XLWings ultra-smooth Excel live updates started!")
+                
+            else:
+                # Use standard openpyxl updater
+                self.excel_live_updater = ExcelLiveUpdater(excel_file, interval_seconds)
+                self.excel_live_updater.set_status_callback(self._update_status)
+                
+                # Add current stocks to the Excel file
+                if self.selected_stocks:
+                    for stock in self.selected_stocks:
+                        self.excel_live_updater.add_stock(stock)
+                
+                # Start live updates
+                self.excel_live_updater.start_live_updates()
+                self._update_status("🔄 Excel live updates started!")
             
         except Exception as e:
             messagebox.showerror("Error", f"Failed to start Excel live updates: {str(e)}")
@@ -572,16 +652,23 @@ class IndianStockTrackerGUI:
             self._update_status("Failed to start Excel live updates")
     
     def _stop_excel_live_updates(self):
-        """Stop Excel live updates"""
+        """Stop Excel live updates (both openpyxl and xlwings)"""
         if self.excel_live_updater:
             self.excel_live_updater.stop_live_updates()
             self.excel_live_updater.cleanup()
             self.excel_live_updater = None
+        
+        if self.excel_xlwings_updater:
+            self.excel_xlwings_updater.stop_live_updates()
+            self.excel_xlwings_updater.cleanup()
+            self.excel_xlwings_updater = None
+        
         self._update_status("Excel live updates stopped")
     
     def _manage_excel_stocks(self):
         """Open a dialog to manage stocks in Excel live updates"""
-        if not self.excel_live_updater:
+        current_updater = self.excel_live_updater or self.excel_xlwings_updater
+        if not current_updater:
             messagebox.showwarning("Not Running", 
                                  "Excel live updates must be started first.")
             return
@@ -613,8 +700,8 @@ class IndianStockTrackerGUI:
         # Populate listbox
         def refresh_list():
             listbox.delete(0, tk.END)
-            if self.excel_live_updater:
-                for stock in self.excel_live_updater.tracked_stocks:
+            if current_updater:
+                for stock in current_updater.tracked_stocks:
                     listbox.insert(tk.END, stock)
         
         refresh_list()
@@ -633,16 +720,16 @@ class IndianStockTrackerGUI:
         
         def add_stock():
             symbol = stock_entry.get().strip().upper()
-            if symbol and self.excel_live_updater:
-                if self.excel_live_updater.add_stock(symbol):
+            if symbol and current_updater:
+                if current_updater.add_stock(symbol):
                     stock_entry.delete(0, tk.END)
                     refresh_list()
         
         def remove_stock():
             selection = listbox.curselection()
-            if selection and self.excel_live_updater:
+            if selection and current_updater:
                 symbol = listbox.get(selection[0])
-                if self.excel_live_updater.remove_stock(symbol):
+                if current_updater.remove_stock(symbol):
                     refresh_list()
         
         ttk.Button(add_frame, text="Add", command=add_stock).pack(side="left")
@@ -657,7 +744,9 @@ class IndianStockTrackerGUI:
     
     def _manual_excel_update(self):
         """Trigger a manual Excel update"""
-        if not self.excel_live_updater:
+        current_updater = self.excel_live_updater or self.excel_xlwings_updater
+        
+        if not current_updater:
             if not self.excel_file_path.get().strip():
                 messagebox.showwarning("No Excel File", 
                                      "Please select or create an Excel file first.")
@@ -665,7 +754,15 @@ class IndianStockTrackerGUI:
             
             # Create a temporary updater for manual update
             try:
-                temp_updater = ExcelLiveUpdater(self.excel_file_path.get(), 30)
+                if self.use_xlwings.get() and XLWINGS_AVAILABLE:
+                    temp_updater = ExcelXlwingsUpdater(
+                        self.excel_file_path.get(), 
+                        30, 
+                        visible=self.xlwings_visible.get()
+                    )
+                else:
+                    temp_updater = ExcelLiveUpdater(self.excel_file_path.get(), 30)
+                
                 temp_updater.set_status_callback(self._update_status)
                 
                 # Add current stocks
@@ -680,7 +777,7 @@ class IndianStockTrackerGUI:
             except Exception as e:
                 messagebox.showerror("Error", f"Manual update failed: {str(e)}")
         else:
-            self.excel_live_updater.manual_update()
+            current_updater.manual_update()
     
     def _on_closing(self):
         """Handle application closing"""

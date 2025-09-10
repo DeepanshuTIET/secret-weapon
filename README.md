@@ -71,54 +71,84 @@ A robust real-time stock tracking application designed for Indian markets (NSE/B
 **Want to see live stock prices in Excel? Try this:**
 
 ```bash
-# 1. Test the feature first
+# 1. Test the features first
 python test_excel_live.py
 
-# 2. Start Excel live updates with popular stocks
+# 2. Start Excel live updates with popular stocks (standard)
 python excel_live_runner.py my_live_stocks.xlsx --popular
 
-# 3. Or use the GUI for more control
+# 3. Or for ultra-smooth updates (requires xlwings)
+python excel_xlwings_runner.py ultra_smooth_stocks.xlsx --popular --interval 5
+
+# 4. Or use the GUI for more control
 python run.py
 ```
 
-**That's it!** Your Excel file will now update with live stock prices every 30 seconds.
+**That's it!** Your Excel file will now update with live stock prices every 30 seconds (or faster with xlwings).
 
 ## 🆕 Excel Live Updates Feature
 
 **Real-time stock price updates directly in Excel files!** Now you can watch stock prices change live in Excel spreadsheets without needing the GUI interface.
 
+### ⚡ NEW: Ultra-Smooth XLWings Integration
+
+**The smoothest possible Excel experience!** We now support **xlwings** for ultra-smooth real-time Excel updates with direct Excel API integration.
+
 ### 📊 How it Works
+- **Two modes available**: Standard (openpyxl) and Ultra-Smooth (xlwings)
 - Updates stock prices directly in Excel cells in real-time
-- Customizable update intervals (10 seconds to 5 minutes)
+- Customizable update intervals (5 seconds to 5 minutes with xlwings, 10+ seconds standard)
 - Professional formatting with Indian currency (₹) and color-coded gains/losses
 - Runs in background - Excel file stays updated even when closed and reopened
 
+### ⚡ XLWings vs Standard Mode
+
+| Feature | Standard (openpyxl) | Ultra-Smooth (xlwings) |
+|---------|-------------------|------------------------|
+| **Update Speed** | 10+ seconds | 5+ seconds |
+| **Smoothness** | Good | Ultra-smooth |
+| **Excel Integration** | File-based | Direct Excel API |
+| **Background Mode** | ✅ Yes | ✅ Yes |
+| **Visible Excel** | ❌ No | ✅ Optional |
+| **Installation** | Built-in | `pip install xlwings` |
+
 ### 🎯 Usage Options
 
-#### 1. GUI Interface
+#### 1. GUI Interface (NEW: XLWings Support!)
 1. Launch the application: `python run.py`
 2. In the "Live Excel Updates" section:
    - Browse for an existing Excel file or create a new one
    - Set your preferred update interval
+   - **NEW:** Check "⚡ Use XLWings (Ultra-Smooth)" for the smoothest experience
+   - **NEW:** Toggle "👀 Show Excel" to make Excel visible during updates
    - Check "Live Excel Updates" to start
    - Use "Manage Stocks" to add/remove stocks from Excel tracking
 
 #### 2. Command Line (No GUI Required)
 ```bash
-# Update popular Indian stocks every 30 seconds
+# Standard Excel updates
 python excel_live_runner.py my_live_stocks.xlsx --popular
 
-# Update specific stocks every 60 seconds
+# NEW: Ultra-smooth XLWings updates
+python excel_xlwings_runner.py my_live_stocks.xlsx --popular
+
+# XLWings with visible Excel and fast updates
+python excel_xlwings_runner.py live_stocks.xlsx --popular --interval 5 --visible
+
+# Update specific stocks every 60 seconds (standard)
 python excel_live_runner.py custom_stocks.xlsx --stocks RELIANCE.NS TCS.NS INFY.NS --interval 60
 
-# Quick start with default settings
-python excel_live_runner.py live_data.xlsx
+# Ultra-smooth updates with custom stocks
+python excel_xlwings_runner.py smooth_stocks.xlsx --stocks RELIANCE.NS TCS.NS --interval 10
 ```
 
-#### 3. Test the Feature
+#### 3. Test the Features
 ```bash
-# Run the test script to verify functionality
+# Test standard Excel live updates
 python test_excel_live.py
+
+# NEW: Test XLWings integration
+python test_xlwings_integration.py
 ```
 
 ### 📋 Excel Live Updates Benefits
@@ -127,8 +157,20 @@ python test_excel_live.py
 - **Persistent Data** - Excel file retains data even when application stops
 - **Professional Formatting** - Indian currency, color coding, proper alignment
 - **Flexible Intervals** - Choose update frequency based on your needs
+- **⚡ NEW: Ultra-Smooth Mode** - XLWings provides the smoothest possible Excel experience
+- **👀 Optional Visibility** - Watch Excel update in real-time or run in background
 
 ## 📋 Changelog
+
+### v1.3.0 (2025-09-10) - Ultra-Smooth XLWings Integration
+- 🆕 **XLWings Integration**: Ultra-smooth real-time Excel updates via direct Excel API
+- 🆕 **XLWings Runner**: `excel_xlwings_runner.py` for command-line ultra-smooth updates
+- 🆕 **Dual Mode Support**: Choose between Standard (openpyxl) and Ultra-Smooth (xlwings)
+- 🆕 **Excel Visibility Control**: Option to show/hide Excel during xlwings updates
+- 🆕 **Faster Update Intervals**: 5-second updates with xlwings (vs 10+ with standard)
+- 🆕 **XLWings Test Suite**: `test_xlwings_integration.py` for validation
+- 🔧 **Enhanced GUI**: XLWings options in Live Excel Updates section
+- 🔧 **Improved Performance**: Direct Excel API integration for smoother updates
 
 ### v1.2.0 (2025-01-08) - Excel Live Updates Release
 - 🆕 **Excel Live Updates**: Real-time stock price updates directly in Excel files
@@ -168,6 +210,9 @@ python test_excel_live.py
 3. **Install dependencies**
    ```bash
    pip install -r requirements.txt
+   
+   # For ultra-smooth Excel updates (optional but recommended)
+   pip install xlwings
    ```
 
 4. **Run the application**
@@ -192,10 +237,13 @@ secret-weapon/
 │   ├── gui.py             # GUI interface with auto-refresh & Excel live updates
 │   ├── data_fetcher.py    # Stock data fetching with caching
 │   ├── excel_handler.py   # Excel export functionality
-│   └── excel_live_updater.py # Excel live updates module (NEW in v1.2.0)
+│   ├── excel_live_updater.py # Excel live updates module (NEW in v1.2.0)
+│   └── excel_xlwings_updater.py # Ultra-smooth XLWings updater (NEW in v1.3.0)
 │
 ├── excel_live_runner.py   # Command-line Excel live updater (NEW in v1.2.0)
+├── excel_xlwings_runner.py # Ultra-smooth XLWings Excel updater (NEW in v1.3.0)
 ├── test_excel_live.py     # Test suite for Excel live updates (NEW in v1.2.0)
+├── test_xlwings_integration.py # XLWings integration test suite (NEW in v1.3.0)
 │
 ├── data/                  # Excel exports and data files
 ├── venv/                  # Virtual environment (if created)

@@ -7,6 +7,7 @@ numpy>=1.24.0           # Pandas dependency
 
 # Excel export
 openpyxl>=3.1.0         # Excel file handling
+xlwings>=0.30.0         # Real-time Excel integration with live updates
 
 # Stock APIs
 yfinance>=0.2.0         # Yahoo Finance API - main data source
